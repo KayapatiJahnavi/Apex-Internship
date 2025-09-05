@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simple Calculator</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f3e8ff; /* soft lavender background */
+    text-align: center;
+    padding: 50px;
+  }
+  h1 {
+    color: #4b0082; /* deep indigo for contrast */
+  }
+  #calculator {
+    background: #fff;
+    display: inline-block;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px #c9a0dc; /* lavender glow */
+  }
+  input[type="text"] {
+    width: 220px;
+    font-size: 24px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 2px solid #9370db; /* medium purple */
+    text-align: right;
+  }
+  button {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin: 5px;
+    border-radius: 5px;
+    border: none;
+    background-color: #9370db; /* lavender purple */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #6a5acd; /* darker lavender */
+  }
+  #description {
+    margin-bottom: 30px;
+    color: #555;
+    font-size: 18px;
+  }
+  #clickMeBtn {
+    margin-top: 40px;
+    width: auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: #9370db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  #clickMeBtn:hover {
+    background-color: #6a5acd;
+  }
+  /* Clear button with soft pink to match lavender */
+  .clear-btn {
+    width: 220px;
+    background-color: #e066ff; 
+  }
+  .clear-btn:hover {
+    background-color: #ba55d3;
+  }
+</style>
+</head>
+<body>
+
+<script>
+  alert('Welcome to the Lavender Calculator! Use the buttons to perform basic arithmetic operations.');
+</script>
+
+<h1>Lavender Calculator</h1>
+
+<p id="description">This calculator performs basic operations like addition, subtraction, multiplication, and division.</p>
+
+<div id="calculator">
+  <input type="text" id="display" disabled />
+
+  <br />
+
+  <button onclick="appendValue('7')">7</button>
+  <button onclick="appendValue('8')">8</button>
+  <button onclick="appendValue('9')">9</button>
+  <button onclick="appendValue('+')">+</button>
+  <br />
+
+  <button onclick="appendValue('4')">4</button>
+  <button onclick="appendValue('5')">5</button>
+  <button onclick="appendValue('6')">6</button>
+  <button onclick="appendValue('-')">-</button>
+  <br />
+
+  <button onclick="appendValue('1')">1</button>
+  <button onclick="appendValue('2')">2</button>
+  <button onclick="appendValue('3')">3</button>
+  <button onclick="appendValue('*')">*</button>
+  <br />
+
+  <button onclick="appendValue('0')">0</button>
+  <button onclick="appendValue('.')">.</button>
+  <button onclick="calculateResult()">=</button>
+  <button onclick="appendValue('/')">/</button>
+  <br />
+
+  <button class="clear-btn" onclick="clearDisplay()">Clear</button>
+</div>
+
+<!-- New Click Me button at the bottom -->
+<button id="clickMeBtn" onclick="alert('Thanks for trying the Lavender Calculator! Hope it helps you with your calculations.')">
+  Click Me
+</button>
+
+<script>
+  const display = document.getElementById('display');
+
+  function appendValue(val) {
+    display.value += val;
+  }
+
+  function calculateResult() {
+    try {
+      display.value = eval(display.value);
+    } catch {
+      alert('Invalid expression');
+    }
+  }
+
+  function clearDisplay() {
+    display.value = '';
+  }
+</script>
+
+</body>
+</html>
