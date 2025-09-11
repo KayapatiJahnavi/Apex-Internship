@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task-4: Tabs with Weather & Quote API</title>
+  <style>
+    :root{
+      --bg: linear-gradient(135deg, #fdfcfb, #e2d1c3);
+      --panel: #ffffff;
+      --text: #333333;
+      --brand: #14b8a6;   /* teal */
+      --accent: #fb7185;  /* coral */
+      --radius: 18px;
+      --shadow: 0 8px 24px rgba(0,0,0,.1);
+    }
+    body{
+      margin:0; font-family: system-ui, sans-serif;
+      background: var(--bg); color:var(--text);
+      line-height:1.6;
+    }
+    .wrapper{ max-width:1100px; margin:0 auto; padding:20px; display:grid; gap:1.2rem; }
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      background:rgba(255,255,255,0.8);
+      padding:14px 18px; border-radius:var(--radius); box-shadow:var(--shadow);
+    }
+    .brand{ font-weight:700; color:var(--brand); }
+    nav{ display:flex; gap:1rem; }
+    nav a{ color:var(--text); text-decoration:none; font-weight:600; }
+    nav a:hover{ color:var(--brand); }
+
+    main{ display:grid; gap:1.2rem; grid-template-columns:1fr; }
+    @media(min-width:720px){ main{ grid-template-columns:1fr 1fr; } }
+
+    .card{ background:var(--panel); padding:20px; border-radius:var(--radius); box-shadow:var(--shadow); }
+    h2{ margin-top:0; }
+
+    /* Tabs */
+    .tabs{ display:flex; gap:1rem; margin-bottom:10px; }
+    .tab{ flex:1; text-align:center; padding:10px; border-radius:var(--radius); cursor:pointer; font-weight:600; background:#f3f4f6; color:#444; }
+    .tab.active{ background:linear-gradient(135deg, var(--brand), var(--accent)); color:#fff; }
+
+    .tab-content{ min-height:120px; }
+
+    .btn{ background:linear-gradient(135deg, var(--brand), var(--accent)); border:none; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600; color:#fff; }
+    .btn:hover{ opacity:0.9; }
+    input{ padding:8px 10px; border-radius:8px; border:1px solid #ddd; outline:none; margin-right:8px; }
+
+    .img-box{ margin-top:10px; }
+    .img-box img{ max-width:100%; border-radius:var(--radius); box-shadow:var(--shadow); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <div class="brand">ApexPlanet — Task-4</div>
+      <nav>
+        <a href="#tabs">Tabs</a>
+        <a href="#api">APIs</a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Left: Tabs with APIs -->
+      <section id="tabs" class="card">
+        <h2>Tabs with APIs</h2>
+        <div class="tabs">
+          <div class="tab active" data-target="weatherBox">🌤 Weather</div>
+          <div class="tab" data-target="quoteBox">💡 Quote</div>
+        </div>
+        <div class="tab-content">
+          <!-- Weather -->
+          <div id="weatherBox">
+            <input type="text" id="cityInput" placeholder="Enter city (e.g. London)">
+            <button class="btn" id="getWeatherBtn">Get Weather</button>
+            <div id="weatherResult" style="margin-top:10px;">No data yet.</div>
+            <div class="img-box"><img src="https://picsum.photos/id/1011/600/300" alt="Weather"></div>
+          </div>
+
+          <!-- Quote -->
+          <div id="quoteBox" style="display:none;">
+            <button class="btn" id="getQuoteBtn">Get Quote</button>
+            <div id="quoteResult" style="margin-top:10px;">No quote yet.</div>
+            <div class="img-box"><img src="https://picsum.photos/id/1012/600/300" alt="Quote"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Info card -->
+      <section id="api" class="card">
+        <h2>About this Task</h2>
+        <p>This task demonstrates:</p>
+        <ul>
+          <li>Responsive design with <strong>Grid</strong></li>
+          <li>A <strong>Tabs component</strong> built in JS</li>
+          <li>Fetch data from <strong>Weather API</strong> and <strong>Quotes API</strong></li>
+          <li>Interactive UI with styled buttons</li>
+        </ul>
+        <div class="img-box"><img src="https://picsum.photos/id/1015/600/300" alt="About Task"></div>
+      </section>
+    </main>
+
+    <footer style="text-align:center; padding:8px; opacity:0.7;">
+      Built for Task-4 — Tabs & API · © <span id="year"></span>
+    </footer>
+  </div>
+
+  <script>
+    // Tabs
+    const tabs=document.querySelectorAll('.tab');
+    tabs.forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        tabs.forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.tab-content > div').forEach(div=>div.style.display='none');
+        document.getElementById(tab.dataset.target).style.display='block';
+      });
+    });
+
+    // Weather API
+    document.getElementById('getWeatherBtn').addEventListener('click',async()=>{
+      const city=document.getElementById('cityInput').value.trim();
+      const box=document.getElementById('weatherResult');
+      if(!city){ box.textContent="Please enter a city."; return; }
+      box.textContent="Loading...";
+      try{
+        const geo=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}`);
+        const geoData=await geo.json();
+        if(!geoData.results || geoData.results.length===0){ box.textContent="City not found."; return; }
+        const {latitude,longitude,name,country}=geoData.results[0];
+        const res=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+        const data=await res.json();
+        const w=data.current_weather;
+        box.innerHTML=`Weather in <strong>${name}, ${country}</strong>:<br>
+          🌡 ${w.temperature}°C, Windspeed ${w.windspeed} km/h`;
+      }catch(err){ box.textContent="Failed to fetch weather."; }
+    });
+
+    // Quote API
+    document.getElementById('getQuoteBtn').addEventListener('click',async()=>{
+      const box=document.getElementById('quoteResult');
+      box.textContent="Loading...";
+      try{
+        const res=await fetch('https://api.quotable.io/random');
+        const q=await res.json();
+        box.innerHTML=`"${q.content}"<br>— ${q.author}`;
+      }catch(err){ box.textContent="Failed to fetch quote."; }
+    });
+
+    // Footer year
+    document.getElementById('year').textContent=new Date().getFullYear();
+  </script>
+</body>
+</html>
