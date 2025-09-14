@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinema Hub</title>
+  <style>
+    /* -------------------- General Styles -------------------- */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #1c1c1c;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #2c2c2c;
+      border-radius: 10px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #f44336;
+    }
+
+    h2 {
+      margin-top: 40px;
+      color: #f44336;
+    }
+
+    /* -------------------- Forms -------------------- */
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    form input, form button, select {
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    form input {
+      flex: 1 1 200px;
+    }
+
+    form button {
+      background-color: #f44336;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      flex: 1 1 120px;
+    }
+
+    form button:hover {
+      background-color: #d32f2f;
+    }
+
+    /* -------------------- Filters -------------------- */
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    select {
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    /* -------------------- Movie List / Catalog -------------------- */
+    .movie-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .movie-card {
+      background-color: #3c3c3c;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .movie-card img {
+      max-width: 100%;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .movie-card h3 {
+      margin: 5px 0;
+      font-size: 18px;
+    }
+
+    .movie-card p {
+      margin: 5px 0;
+    }
+
+    .movie-card button {
+      margin: 5px 5px 0 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .watch-btn {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .watch-btn:hover {
+      background-color: #388e3c;
+    }
+
+    .delete-btn {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .delete-btn:hover {
+      background-color: #d32f2f;
+    }
+
+    .sort-btn {
+      background-color: #2196f3;
+      color: white;
+    }
+
+    .sort-btn:hover {
+      background-color: #1976d2;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎬 Cinema Hub</h1>
+
+    <!-- -------------------- Watchlist Section -------------------- -->
+    <section>
+      <h2>My Movie Watchlist</h2>
+      <form id="movieForm">
+        <input type="text" id="title" placeholder="Movie Title" required>
+        <input type="text" id="genre" placeholder="Genre" required>
+        <input type="url" id="poster" placeholder="Poster URL (optional)">
+        <button type="submit">Add Movie</button>
+      </form>
+
+      <div class="filters">
+        <select id="filterGenre">
+          <option value="All">All Genres</option>
+        </select>
+        <select id="filterStatus">
+          <option value="All">All Status</option>
+          <option value="Watched">Watched</option>
+          <option value="Not Watched">Not Watched</option>
+        </select>
+      </div>
+
+      <div id="watchlist" class="movie-list"></div>
+    </section>
+
+    <!-- -------------------- Movie Catalog Section -------------------- -->
+    <section>
+      <h2>Movie Catalog</h2>
+      <div class="filters">
+        <select id="catalogGenre">
+          <option value="All">All Genres</option>
+        </select>
+        <select id="catalogSort">
+          <option value="default">Sort By</option>
+          <option value="ratingDesc">Rating: High → Low</option>
+          <option value="ratingAsc">Rating: Low → High</option>
+          <option value="yearDesc">Year: New → Old</option>
+          <option value="yearAsc">Year: Old → New</option>
+        </select>
+      </div>
+      <div id="catalog" class="movie-list"></div>
+    </section>
+  </div>
+
+  <script>
+    // -------------------- Watchlist App --------------------
+    const movieForm = document.getElementById('movieForm');
+    const titleInput = document.getElementById('title');
+    const genreInput = document.getElementById('genre');
+    const posterInput = document.getElementById('poster');
+    const watchlistDiv = document.getElementById('watchlist');
+    const filterGenre = document.getElementById('filterGenre');
+    const filterStatus = document.getElementById('filterStatus');
+
+    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+
+    function saveAndRenderWatchlist() {
+      localStorage.setItem('watchlist', JSON.stringify(watchlist));
+      renderWatchlist();
+      updateGenreFilter();
+    }
+
+    movieForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const movie = {
+        id: Date.now(),
+        title: titleInput.value,
+        genre: genreInput.value,
+        poster: posterInput.value || 'https://via.placeholder.com/150x220?text=No+Image',
+        status: 'Not Watched'
+      };
+      watchlist.push(movie);
+      saveAndRenderWatchlist();
+      movieForm.reset();
+    });
+
+    function renderWatchlist() {
+      watchlistDiv.innerHTML = '';
+      let filtered = watchlist.filter(m => 
+        (filterGenre.value === 'All' || m.genre === filterGenre.value) &&
+        (filterStatus.value === 'All' || m.status === filterStatus.value)
+      );
+
+      filtered.forEach(movie => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.innerHTML = `
+          <img src="${movie.poster}" alt="${movie.title}">
+          <h3>${movie.title}</h3>
+          <p>Genre: ${movie.genre}</p>
+          <p>Status: ${movie.status}</p>
+          <button class="watch-btn">${movie.status === 'Watched' ? 'Mark Not Watched' : 'Mark Watched'}</button>
+          <button class="delete-btn">Delete</button>
+        `;
+        card.querySelector('.watch-btn').addEventListener('click', () => {
+          movie.status = movie.status === 'Watched' ? 'Not Watched' : 'Watched';
+          saveAndRenderWatchlist();
+        });
+        card.querySelector('.delete-btn').addEventListener('click', () => {
+          watchlist = watchlist.filter(m => m.id !== movie.id);
+          saveAndRenderWatchlist();
+        });
+        watchlistDiv.appendChild(card);
+      });
+    }
+
+    function updateGenreFilter() {
+      const genres = ['All', ...new Set(watchlist.map(m => m.genre))];
+      filterGenre.innerHTML = genres.map(g => `<option value="${g}">${g}</option>`).join('');
+    }
+
+    filterGenre.addEventListener('change', renderWatchlist);
+    filterStatus.addEventListener('change', renderWatchlist);
+
+    saveAndRenderWatchlist();
+
+    // -------------------- Movie Catalog --------------------
+    const catalogDiv = document.getElementById('catalog');
+    const catalogGenre = document.getElementById('catalogGenre');
+    const catalogSort = document.getElementById('catalogSort');
+
+    // Sample movie catalog data
+    let catalog = [
+      {title: 'KUSHI', genre: 'Rom-Com', poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU2X7ctfoargo1pZatC5ooHRbxrq_DrCmd5y__jlCxw2GzhkawpT_QDXkTMZJ479TuA_4&usqp=CAU', rating: 8.8, year: 2001},
+      {title: 'GABBAR SINGH', genre: 'Action', poster: 'https://m.media-amazon.com/images/M/MV5BNjRmZTU4NjYtMjgzNC00ZWY5LThlMDUtNjc4MWRiZmQzM2VmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg', rating: 9.0, year: 2012},
+      {title: 'MAHARSHI', genre: 'Drama', poster: 'https://c8.alamy.com/comp/T9231M/maharshi-indian-poster-in-telugu-and-english-mahesh-babu-2019-great-indian-films-usa-courtesy-everett-collection-T9231M.jpg', rating: 8.6, year: 2019},
+      {title: 'THOLI PREMA', genre: 'Romantic Drama', poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBUk-bZYXAZ879Sog5azT1MEo1__BEMmT_TA&s', rating: 7.4, year: 2018},
+      
+    ];
+
+    function renderCatalog() {
+      let filtered = catalog.filter(m => catalogGenre.value === 'All' || m.genre === catalogGenre.value);
+
+      switch(catalogSort.value) {
+        case 'ratingDesc': filtered.sort((a,b)=>b.rating-a.rating); break;
+        case 'ratingAsc': filtered.sort((a,b)=>a.rating-b.rating); break;
+        case 'yearDesc': filtered.sort((a,b)=>b.year-a.year); break;
+        case 'yearAsc': filtered.sort((a,b)=>a.year-b.year); break;
+      }
+
+      catalogDiv.innerHTML = '';
+      filtered.forEach(movie => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.innerHTML = `
+          <img src="${movie.poster}" alt="${movie.title}">
+          <h3>${movie.title}</h3>
+          <p>Genre: ${movie.genre}</p>
+          <p>Rating: ${movie.rating}</p>
+          <p>Year: ${movie.year}</p>
+        `;
+        catalogDiv.appendChild(card);
+      });
+    }
+
+    function updateCatalogGenre() {
+      const genres = ['All', ...new Set(catalog.map(m => m.genre))];
+      catalogGenre.innerHTML = genres.map(g=>`<option value="${g}">${g}</option>`).join('');
+    }
+
+    catalogGenre.addEventListener('change', renderCatalog);
+    catalogSort.addEventListener('change', renderCatalog);
+
+    updateCatalogGenre();
+    renderCatalog();
+
+  </script>
+</body>
+</html>
